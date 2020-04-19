@@ -1,0 +1,1 @@
+For more information about this project go to https://github.com/makoteo/weeklychores/wiki

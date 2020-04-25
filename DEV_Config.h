@@ -88,6 +88,22 @@
 #define BUSYPIN 0x800 //Purple, 5
 #define LEDPIN 0x100
 
+#define CLKCTRL *(unsigned short *)(0x40000C02)
+#define GROUP0PMUX5 *(unsigned char *)(0x41004435)
+#define GROUP1PMUX11 *(unsigned char *)(0x410044BB)
+#define GENCTRL *(unsigned int *)(0x40000C04)
+#define GROUP0PINCFG10 *(unsigned char *)(0x4100444A)
+#define GROUP1PINCFG22 *(unsigned char *)(0x410044D6)
+#define XOSC32K *(unsigned short *)(0x40000814)
+#define RTC_CTRL *(unsigned short *)(0x40001400)
+#define GENDIV *(unsigned short *)(0x40000C08)
+#define DBGCTRL *(unsigned char *)(0x4000140B)
+
+#define FUNCTION_H 0x07
+#define GENCTRL_OE 0x80000
+#define PMUXEN 0x1
+#define DBGRUN 0x1
+
 #define PULLEN 0x4
 #define INEN 0x2
 

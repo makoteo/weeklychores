@@ -210,6 +210,27 @@ void main(){
     DEV_Digital_Write(EPD_RST_PIN, 1);
     DEV_Digital_Write(EPD_RST_PIN, 0);
     DEV_Digital_Write(EPD_RST_PIN, 1);
+    
+    //Setting PB22 (mkr zero J5.9) as GCLK_IO[0]
+    GROUP1PMUX11 = GROUP1PMUX11|FUNCTION_H; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
+    GROUP1PINCFG22 = GROUP1PINCFG22|PMUXEN; //datasheet page 387, Enable alternate function
+    GENCTRL = GENCTRL|GENCTRL_OE; //datasheet page 31 & 126, Send GENCLK00 to GCLK_IO[0]
+    
+    //Configure 32K external oscillator
+    XOSC32K = 0x007F; // datasheet page 191, Enable external 32k crystal
+    
+    //Connect GENCLK4 to XOSC32K and send it also to PA10 (mkr zero J4.11)
+    GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H; //datasheet page 385, Set alternate function of PA10 as GCLK_IO[4]
+    GROUP0PINCFG10 = GROUP0PINCFG10|PMUXEN; //datasheet page 387, Enable alternate function    
+    GENDIV = 0x0000FF04;//divide 32.768khz by 255 = 128
+    GENCTRL = 0x00290504; //datasheet page 31 & 126 Connect GENCLK04 to XOSC32K, Send it to GCLK_IO[4] and enable it
+    
+    //Start clock
+    CLKCTRL = 0x4404; //Datasheet page 123, Connect GENCLK4 to RTC
+    //DBGCTRL = DBGCTRL|DBGRUN; //Keep running even when debug is stopped
+    RTC_CTRL = 0x070A; // Datasheet page 242, divide clock by 128 to get 1Hz, set the MODE 2 (calendar) and enable RTC
+    //read CLOCK register to get date & time // Datasheet page 262
+    
     DEV_Module_Init();
     EPD_2IN7_Init_4Gray();
     EPD_2IN7_Clear();
@@ -228,7 +249,7 @@ void main(){
     Paint_SelectImage(BlackImage);
     Paint_Clear(WHITE);
     Paint_DrawRectangle(20, 70, 70, 120, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    Paint_DrawString_EN(10, 20, "HELLO NELLY!!", &Font24, WHITE, BLACK);
+    Paint_DrawString_EN(10, 20, "Hello Youtube!", &Font24, WHITE, BLACK);
     EPD_2IN7_Display(BlackImage);
     
     

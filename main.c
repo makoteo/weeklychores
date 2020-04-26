@@ -181,10 +181,13 @@ void setClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYT
     hour = hour<<3;
     minute = minute<<2;
     RTC_CLOCK = 0;
-    RTC_CLOCK = year<<24|month<<18|day<<14|hour<<9|minute<<4|second;
+    unsigned int tmp = year<<24|month<<18|day<<14|hour<<9|minute<<4|second;
+    RTC_CLOCK = tmp;
 }
 
-void readClock(char *TimeAndDate, unsigned int datetime){
+void readClock(char *TimeAndDate){
+    
+    unsigned int datetime = RTC_CLOCK;
     
     unsigned int year = (datetime >> 26) & 0x000000FF;
     unsigned int month = (datetime >> 22) & 0x0000000F;
@@ -192,7 +195,7 @@ void readClock(char *TimeAndDate, unsigned int datetime){
     unsigned int hour = (datetime >> 12) & 0x0000001F;
     unsigned int minute = (datetime >> 6) & 0x0000003F;
     unsigned int second = datetime & 0x3F;
-    
+
     //unsigned int tmp = 24;
     TimeAndDate[0] = 0x30 + day/10;
     TimeAndDate[1] = 0x30 + day%10;
@@ -209,14 +212,13 @@ void readClock(char *TimeAndDate, unsigned int datetime){
     TimeAndDate[12] = 0x30 + minute/10;
     TimeAndDate[13] = 0x30 + minute%10;
     //TimeAndDate[11] = 0x30 + second/10;
-    //TimeAndDate[12] = 0x30 + second%10;    
-    //TimeAndDate = "123";
+    //TimeAndDate[12] = 0x30 + second%10;
 }
 
 void main(){
     char TimeAndDate[14];
-    setClock(20,4,26,13,30,0);
-    readClock(&TimeAndDate[0], RTC_CLOCK);
+    setClock(20,4,26,14,1,0);
+    readClock(TimeAndDate);
     
     GROUP1DIR = GROUP1DIR|LEDPIN; //SET LED PIN AS OUTPUT
     GROUP1OUT = GROUP1OUT|LEDPIN; //SET LED HIGH
@@ -306,7 +308,7 @@ void main(){
         //clock();
         EPD_2IN7_Wake();
         Paint_Clear(WHITE);
-        readClock(&TimeAndDate[0], RTC_CLOCK);
+        readClock(TimeAndDate);
         Paint_DrawString_EN(10, 20, TimeAndDate, &Font24, WHITE, BLACK);
         EPD_2IN7_Display(BlackImage);
         EPD_2IN7_Sleep();

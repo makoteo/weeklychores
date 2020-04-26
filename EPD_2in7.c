@@ -719,3 +719,9 @@ void EPD_2IN7_Sleep(void)
     EPD_2in7_SendCommand(0X07);  	//deep sleep
     EPD_2in7_SendData(0xA5);
 }
+
+void EPD_2IN7_Wake(void){
+    //DEV_Module_Init();
+    EPD_2IN7_Init_4Gray();
+    //EPD_2IN7_Clear();
+}

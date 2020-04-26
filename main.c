@@ -56,6 +56,7 @@
  */
 
 #include <xc.h>
+#include <string.h>
 
 /*
 #define GROUP0PINCFG16 *(char *)(0x41004450)
@@ -173,7 +174,50 @@
     Refer to the example_file.h interface header for function usage details.
  */
 
+void setClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYTE second){
+    year = year<<2;
+    month = month<<4;
+    day = day<<3;
+    hour = hour<<3;
+    minute = minute<<2;
+    RTC_CLOCK = 0;
+    RTC_CLOCK = year<<24|month<<18|day<<14|hour<<9|minute<<4|second;
+}
+
+void readClock(char *TimeAndDate, unsigned int datetime){
+    
+    unsigned int year = (datetime >> 26) & 0x000000FF;
+    unsigned int month = (datetime >> 22) & 0x0000000F;
+    unsigned int day = (datetime >> 17) & 0x0000001F;
+    unsigned int hour = (datetime >> 12) & 0x0000001F;
+    unsigned int minute = (datetime >> 6) & 0x0000003F;
+    unsigned int second = datetime & 0x3F;
+    
+    //unsigned int tmp = 24;
+    TimeAndDate[0] = 0x30 + day/10;
+    TimeAndDate[1] = 0x30 + day%10;
+    TimeAndDate[2] = '/';
+    TimeAndDate[3] = 0x30 + month/10;
+    TimeAndDate[4] = 0x30 + month%10;
+    TimeAndDate[5] = '/';
+    TimeAndDate[6] = 0x30 + year/10;
+    TimeAndDate[7] = 0x30 + year%10;
+    TimeAndDate[8] = ' ';
+    TimeAndDate[9] = 0x30 + hour/10;
+    TimeAndDate[10] = 0x30 + hour%10;
+    TimeAndDate[11] = ':';
+    TimeAndDate[12] = 0x30 + minute/10;
+    TimeAndDate[13] = 0x30 + minute%10;
+    //TimeAndDate[11] = 0x30 + second/10;
+    //TimeAndDate[12] = 0x30 + second%10;    
+    //TimeAndDate = "123";
+}
+
 void main(){
+    char TimeAndDate[14];
+    setClock(20,4,26,13,30,0);
+    readClock(&TimeAndDate[0], RTC_CLOCK);
+    
     GROUP1DIR = GROUP1DIR|LEDPIN; //SET LED PIN AS OUTPUT
     GROUP1OUT = GROUP1OUT|LEDPIN; //SET LED HIGH
     //GROUP1OUT = GROUP1OUT^LEDPIN;
@@ -235,11 +279,10 @@ void main(){
     EPD_2IN7_Init_4Gray();
     EPD_2IN7_Clear();
     
-   
-    //i = EPD_2in7_test();
+   //i = EPD_2in7_test();
     //Create a new image cache
     UBYTE *BlackImage;
-    /* you have to edit the startup_stm32fxxx.s file and set a big enough heap size */
+    // you have to edit the startup_stm32fxxx.s file and set a big enough heap size
     UWORD Imagesize = ((EPD_2IN7_WIDTH % 8 == 0)? (EPD_2IN7_WIDTH / 8 ): (EPD_2IN7_WIDTH / 8 + 1)) * EPD_2IN7_HEIGHT;
     if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
         EPD_2IN7_Sleep();
@@ -248,19 +291,35 @@ void main(){
     Paint_NewImage(BlackImage, EPD_2IN7_WIDTH, EPD_2IN7_HEIGHT, 270, WHITE);
     Paint_SelectImage(BlackImage);
     Paint_Clear(WHITE);
-    Paint_DrawRectangle(20, 70, 70, 120, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    Paint_DrawString_EN(10, 20, "Hello Youtube!", &Font24, WHITE, BLACK);
+    //Paint_DrawRectangle(20, 70, 70, 120, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    char tmp[] = "Hi!";
+    
+    Paint_DrawString_EN(10, 20, tmp, &Font24, WHITE, BLACK);
     EPD_2IN7_Display(BlackImage);
-    
-    
     EPD_2IN7_Sleep();
-    DEV_Module_Exit();
+    
     //delay(10);
     //clock();
     
+    unsigned int i;
     while(1){
-        clock();
+        //clock();
+        EPD_2IN7_Wake();
+        Paint_Clear(WHITE);
+        readClock(&TimeAndDate[0], RTC_CLOCK);
+        Paint_DrawString_EN(10, 20, TimeAndDate, &Font24, WHITE, BLACK);
+        EPD_2IN7_Display(BlackImage);
+        EPD_2IN7_Sleep();
+        
+        for(i = 0; i < 50; i++){
+            delay(500);
+            GROUP1OUT = GROUP1OUT|LEDPIN; 
+            delay(500);
+            GROUP1OUT = GROUP1OUT^LEDPIN;
+        }
+    
     }
+    DEV_Module_Exit();
 }
 
 /* *****************************************************************************

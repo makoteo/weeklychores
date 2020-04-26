@@ -98,6 +98,7 @@
 #define RTC_CTRL *(unsigned short *)(0x40001400)
 #define GENDIV *(unsigned short *)(0x40000C08)
 #define DBGCTRL *(unsigned char *)(0x4000140B)
+#define RTC_CLOCK *(unsigned int *)(0x40001410)
 
 #define FUNCTION_H 0x07
 #define GENCTRL_OE 0x80000

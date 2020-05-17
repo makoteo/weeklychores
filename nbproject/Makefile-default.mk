@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=DEV_Config.c EPD_2in7.c GUI_Paint.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c main.c
+SOURCEFILES_QUOTED_IF_SPACED=DEV_Config.c EPD_2in7.c GUI_Paint.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c main.c fontTmp.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/DEV_Config.o ${OBJECTDIR}/EPD_2in7.o ${OBJECTDIR}/GUI_Paint.o ${OBJECTDIR}/font12.o ${OBJECTDIR}/font12CN.o ${OBJECTDIR}/font16.o ${OBJECTDIR}/font20.o ${OBJECTDIR}/font24.o ${OBJECTDIR}/font24CN.o ${OBJECTDIR}/font8.o ${OBJECTDIR}/main.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/DEV_Config.o.d ${OBJECTDIR}/EPD_2in7.o.d ${OBJECTDIR}/GUI_Paint.o.d ${OBJECTDIR}/font12.o.d ${OBJECTDIR}/font12CN.o.d ${OBJECTDIR}/font16.o.d ${OBJECTDIR}/font20.o.d ${OBJECTDIR}/font24.o.d ${OBJECTDIR}/font24CN.o.d ${OBJECTDIR}/font8.o.d ${OBJECTDIR}/main.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/DEV_Config.o ${OBJECTDIR}/EPD_2in7.o ${OBJECTDIR}/GUI_Paint.o ${OBJECTDIR}/font12.o ${OBJECTDIR}/font12CN.o ${OBJECTDIR}/font16.o ${OBJECTDIR}/font20.o ${OBJECTDIR}/font24.o ${OBJECTDIR}/font24CN.o ${OBJECTDIR}/font8.o ${OBJECTDIR}/main.o ${OBJECTDIR}/fontTmp.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/DEV_Config.o.d ${OBJECTDIR}/EPD_2in7.o.d ${OBJECTDIR}/GUI_Paint.o.d ${OBJECTDIR}/font12.o.d ${OBJECTDIR}/font12CN.o.d ${OBJECTDIR}/font16.o.d ${OBJECTDIR}/font20.o.d ${OBJECTDIR}/font24.o.d ${OBJECTDIR}/font24CN.o.d ${OBJECTDIR}/font8.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/fontTmp.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/DEV_Config.o ${OBJECTDIR}/EPD_2in7.o ${OBJECTDIR}/GUI_Paint.o ${OBJECTDIR}/font12.o ${OBJECTDIR}/font12CN.o ${OBJECTDIR}/font16.o ${OBJECTDIR}/font20.o ${OBJECTDIR}/font24.o ${OBJECTDIR}/font24CN.o ${OBJECTDIR}/font8.o ${OBJECTDIR}/main.o
+OBJECTFILES=${OBJECTDIR}/DEV_Config.o ${OBJECTDIR}/EPD_2in7.o ${OBJECTDIR}/GUI_Paint.o ${OBJECTDIR}/font12.o ${OBJECTDIR}/font12CN.o ${OBJECTDIR}/font16.o ${OBJECTDIR}/font20.o ${OBJECTDIR}/font24.o ${OBJECTDIR}/font24CN.o ${OBJECTDIR}/font8.o ${OBJECTDIR}/main.o ${OBJECTDIR}/fontTmp.o
 
 # Source Files
-SOURCEFILES=DEV_Config.c EPD_2in7.c GUI_Paint.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c main.c
+SOURCEFILES=DEV_Config.c EPD_2in7.c GUI_Paint.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c main.c fontTmp.c
 
 # Pack Options 
 PACK_COMMON_OPTIONS=-I ${CMSIS_DIR}\CMSIS\Core\Include
@@ -176,6 +176,12 @@ ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/main.o 
 	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp=${DFP_DIR}/samd21a ${PACK_COMMON_OPTIONS} 
 	
+${OBJECTDIR}/fontTmp.o: fontTmp.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/fontTmp.o.d 
+	@${RM} ${OBJECTDIR}/fontTmp.o 
+	@${FIXDEPS} "${OBJECTDIR}/fontTmp.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/fontTmp.o.d" -o ${OBJECTDIR}/fontTmp.o fontTmp.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp=${DFP_DIR}/samd21a ${PACK_COMMON_OPTIONS} 
+	
 else
 ${OBJECTDIR}/DEV_Config.o: DEV_Config.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -242,6 +248,12 @@ ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/main.o.d 
 	@${RM} ${OBJECTDIR}/main.o 
 	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp=${DFP_DIR}/samd21a ${PACK_COMMON_OPTIONS} 
+	
+${OBJECTDIR}/fontTmp.o: fontTmp.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/fontTmp.o.d 
+	@${RM} ${OBJECTDIR}/fontTmp.o 
+	@${FIXDEPS} "${OBJECTDIR}/fontTmp.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/fontTmp.o.d" -o ${OBJECTDIR}/fontTmp.o fontTmp.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp=${DFP_DIR}/samd21a ${PACK_COMMON_OPTIONS} 
 	
 endif
 

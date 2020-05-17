@@ -217,8 +217,11 @@ void readClock(char *TimeAndDate){
 
 void main(){
     char TimeAndDate[14];
-    setClock(20,4,26,14,1,0);
     readClock(TimeAndDate);
+    setClock(20,5,15,12,22,0);
+    readClock(TimeAndDate);
+    
+    //ADD DCF77
     
     GROUP1DIR = GROUP1DIR|LEDPIN; //SET LED PIN AS OUTPUT
     GROUP1OUT = GROUP1OUT|LEDPIN; //SET LED HIGH
@@ -250,6 +253,9 @@ void main(){
     GROUP1OUT = GROUP1OUT&(~RSTPIN);
     GROUP1OUT = GROUP1OUT|RSTPIN;
     
+    //GROUP0DIR = GROUP0DIR&(~BUTTON1PIN);
+    //GROUP0INEN = GROUP0INEN|BUTTON1PIN;
+    
     //--------------------------
     
     DEV_Digital_Write(EPD_RST_PIN, 0);
@@ -270,6 +276,10 @@ void main(){
     GROUP0PINCFG10 = GROUP0PINCFG10|PMUXEN; //datasheet page 387, Enable alternate function    
     GENDIV = 0x0000FF04;//divide 32.768khz by 255 = 128
     GENCTRL = 0x00290504; //datasheet page 31 & 126 Connect GENCLK04 to XOSC32K, Send it to GCLK_IO[4] and enable it
+    
+    
+    //-----------------------------------------------------------------------------------------------------------------------------------------------
+    FREQCORR = 0x1C;
     
     //Start clock
     CLKCTRL = 0x4404; //Datasheet page 123, Connect GENCLK4 to RTC
@@ -310,6 +320,7 @@ void main(){
         Paint_Clear(WHITE);
         readClock(TimeAndDate);
         Paint_DrawString_EN(10, 20, TimeAndDate, &Font24, WHITE, BLACK);
+        Paint_DrawString_EN(10, 35, " ", &FontTmp, WHITE, BLACK);
         EPD_2IN7_Display(BlackImage);
         EPD_2IN7_Sleep();
         

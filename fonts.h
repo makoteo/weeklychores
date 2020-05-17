@@ -85,6 +85,8 @@ extern sFONT Font16;
 extern sFONT Font12;
 extern sFONT Font8;
 
+extern sFONT FontTmp;
+
 extern cFONT Font12CN;
 extern cFONT Font24CN;
 #ifdef __cplusplus

@@ -87,6 +87,7 @@
 #define RSTPIN 0x400 //White, 4
 #define BUSYPIN 0x800 //Purple, 5
 #define LEDPIN 0x100
+#define BUTTON1PIN 0x800
 
 #define CLKCTRL *(unsigned short *)(0x40000C02)
 #define GROUP0PMUX5 *(unsigned char *)(0x41004435)
@@ -99,6 +100,8 @@
 #define GENDIV *(unsigned short *)(0x40000C08)
 #define DBGCTRL *(unsigned char *)(0x4000140B)
 #define RTC_CLOCK *(unsigned int *)(0x40001410)
+
+#define FREQCORR *(unsigned char *)(0x4000140B)
 
 #define FUNCTION_H 0x07
 #define GENCTRL_OE 0x80000

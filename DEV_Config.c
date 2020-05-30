@@ -40,7 +40,7 @@ void DEV_SPI_WriteByte(UBYTE value)
         
     UDOUBLE i;
     
-    for(i = 0; i < 8; i++){
+    /*for(i = 0; i < 8; i++){
 
         if(0x80&value){
             GROUP0OUT = GROUP0OUT|MOSIPIN;
@@ -55,7 +55,12 @@ void DEV_SPI_WriteByte(UBYTE value)
         //delay(5);
         GROUP0OUT = GROUP0OUT&(~CLKPIN);
         
+    }*/
+    
+    while(SPI_SYNCBUSY != 0){
+
     }
+    SPI_DATA = value;
 }
 
 void DEV_Module_Init(void)

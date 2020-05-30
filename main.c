@@ -185,6 +185,23 @@ void setClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYT
     RTC_CLOCK = tmp;
 }
 
+void increaseMinute(){
+    unsigned int datetime = RTC_CLOCK;
+    
+    unsigned int year = (datetime >> 26) & 0x000000FF;
+    unsigned int month = (datetime >> 22) & 0x0000000F;
+    unsigned int day = (datetime >> 17) & 0x0000001F;
+    unsigned int hour = (datetime >> 12) & 0x0000001F;
+    unsigned int minute = (datetime >> 6) & 0x0000003F;
+    unsigned int second = datetime & 0x3F;
+    minute+=5;
+    if(minute > 59){
+        minute-=60;
+        hour+=1;
+    }
+    setClock(year, month, day, hour, minute, second);
+}
+
 void readClock(char *TimeAndDate){
     
     unsigned int datetime = RTC_CLOCK;
@@ -218,7 +235,7 @@ void readClock(char *TimeAndDate){
 void main(){
     char TimeAndDate[14];
     readClock(TimeAndDate);
-    setClock(20,5,15,12,22,0);
+    setClock(20,5,30,17,55,0);
     readClock(TimeAndDate);
     
     //ADD DCF77
@@ -253,8 +270,13 @@ void main(){
     GROUP1OUT = GROUP1OUT&(~RSTPIN);
     GROUP1OUT = GROUP1OUT|RSTPIN;
     
+    //BUTTON
+    //GROUP0OUT = GROUP0OUT|BUTTON1PIN;
+    //GROUP0PINCFG11 = GROUP0PINCFG11|PULLEN;
+    //GROUP0PINCFG11 = GROUP0PINCFG11|INEN;
     //GROUP0DIR = GROUP0DIR&(~BUTTON1PIN);
-    //GROUP0INEN = GROUP0INEN|BUTTON1PIN;
+    
+    
     
     //--------------------------
     
@@ -264,7 +286,7 @@ void main(){
     DEV_Digital_Write(EPD_RST_PIN, 1);
     
     //Setting PB22 (mkr zero J5.9) as GCLK_IO[0]
-    GROUP1PMUX11 = GROUP1PMUX11|FUNCTION_H; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
+    GROUP1PMUX11 = GROUP1PMUX11|FUNCTION_H_LOW; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
     GROUP1PINCFG22 = GROUP1PINCFG22|PMUXEN; //datasheet page 387, Enable alternate function
     GENCTRL = GENCTRL|GENCTRL_OE; //datasheet page 31 & 126, Send GENCLK00 to GCLK_IO[0]
     
@@ -272,7 +294,7 @@ void main(){
     XOSC32K = 0x007F; // datasheet page 191, Enable external 32k crystal
     
     //Connect GENCLK4 to XOSC32K and send it also to PA10 (mkr zero J4.11)
-    GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H; //datasheet page 385, Set alternate function of PA10 as GCLK_IO[4]
+    GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H_LOW; //datasheet page 385, Set alternate function of PA10 as GCLK_IO[4]
     GROUP0PINCFG10 = GROUP0PINCFG10|PMUXEN; //datasheet page 387, Enable alternate function    
     GENDIV = 0x0000FF04;//divide 32.768khz by 255 = 128
     GENCTRL = 0x00290504; //datasheet page 31 & 126 Connect GENCLK04 to XOSC32K, Send it to GCLK_IO[4] and enable it
@@ -281,11 +303,28 @@ void main(){
     //-----------------------------------------------------------------------------------------------------------------------------------------------
     FREQCORR = 0x1C;
     
-    //Start clock
+    //Configure RTC
     CLKCTRL = 0x4404; //Datasheet page 123, Connect GENCLK4 to RTC
     //DBGCTRL = DBGCTRL|DBGRUN; //Keep running even when debug is stopped
     RTC_CTRL = 0x070A; // Datasheet page 242, divide clock by 128 to get 1Hz, set the MODE 2 (calendar) and enable RTC
     //read CLOCK register to get date & time // Datasheet page 262
+    
+    //Configure SPI SERCOM0
+    GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_LOW; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
+    GROUP0PINCFG16 = GROUP0PINCFG16|PMUXEN; //datasheet page 387, Enable alternate function
+    
+    GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_HIGH; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
+    GROUP0PINCFG17 = GROUP0PINCFG17|PMUXEN; //datasheet page 387, Enable alternate function
+    
+    //DFLLCTRL = 0x02; //Enable 48MHz Clock
+    GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H_HIGH; //datasheet page 385, Set alternate function of PA11 as GCLK_IO[5]
+    GROUP0PINCFG11 = GROUP0PINCFG11|PMUXEN; //datasheet page 387, Enable alternate function   
+    GENCTRL = 0x00090605; //datasheet page 31 & 126 Connect GENCLK05 to DFLL48M, Send it to GCLK_IO[5] and enable it
+    CLKCTRL = 0x4515; //Datasheet page 123, Connect GENCLK5 to SERCOM1
+    
+    APBCMASK = APBCMASK|0x00000008; //Enables APBC clock for SERCOM1
+    SPI_CTRLB = 0x0; //8 bit transfer page 465
+    SPI_CTRLA = 0x0000000E; //Enable SPI master
     
     DEV_Module_Init();
     EPD_2IN7_Init_4Gray();
@@ -324,11 +363,24 @@ void main(){
         EPD_2IN7_Display(BlackImage);
         EPD_2IN7_Sleep();
         
+        UBYTE button1pressed;
         for(i = 0; i < 50; i++){
             delay(500);
-            GROUP1OUT = GROUP1OUT|LEDPIN; 
+            DEV_Digital_Write(EPD_LED_PIN, 1);
             delay(500);
-            GROUP1OUT = GROUP1OUT^LEDPIN;
+            /*button1pressed = DEV_Digital_Read(EPD_BUTTON1PIN);
+            button1pressed =!(button1pressed & 0x01);
+            if(button1pressed == 1){
+                increaseMinute();
+                EPD_2IN7_Wake();
+                Paint_Clear(WHITE);
+                readClock(TimeAndDate);
+                Paint_DrawString_EN(10, 20, TimeAndDate, &Font24, WHITE, BLACK);
+                Paint_DrawString_EN(10, 35, " ", &FontTmp, WHITE, BLACK);
+                EPD_2IN7_Display(BlackImage);
+                EPD_2IN7_Sleep();
+            }*/
+            DEV_Digital_Write(EPD_LED_PIN, 0);
         }
     
     }

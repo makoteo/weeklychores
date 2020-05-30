@@ -73,8 +73,10 @@
 */
 
 #define GROUP0PINCFG16 *(char *)(0x41004450)
+#define GROUP0PINCFG11 *(char *)(0x4100444B)
 #define GROUP0DIR *(unsigned int *)(0x41004400)
 #define GROUP0OUT *(unsigned int *)(0x41004410)
+#define GROUP0IN *(unsigned int *)(0x41004420)
 #define CSPIN 0x200000 //Orange, 7
 #define DCPIN 0x100000 //Green, 6
 #define CLKPIN 0x20000 //Yellow, 9
@@ -101,9 +103,24 @@
 #define DBGCTRL *(unsigned char *)(0x4000140B)
 #define RTC_CLOCK *(unsigned int *)(0x40001410)
 
+#define SPI_CTRLA *(unsigned int *)(0x42000C00)
+#define SPI_CTRLB *(unsigned int *)(0x42000C04)
+#define SPI_INTFLAG *(unsigned char *)(0x42000C18)
+#define SPI_DATA *(unsigned short *)(0x42000C28)
+#define SPI_DRE 0x01
+#define DFLLCTRL *(unsigned short *)(0x40000C24)
+#define SPI_SYNCBUSY *(unsigned int *)(0x42000C1C)
+
+#define GROUP0PMUX8 *(unsigned char *)(0x41004438)
+#define GROUP0PINCFG17 *(unsigned char *)(0x41004451)
+#define APBCMASK *(unsigned int *)(0x40000420)
+
 #define FREQCORR *(unsigned char *)(0x4000140B)
 
-#define FUNCTION_H 0x07
+#define FUNCTION_H_LOW 0x07
+#define FUNCTION_H_HIGH 0x70
+#define FUNCTION_C_LOW 0x02
+#define FUNCTION_C_HIGH 0x20
 #define GENCTRL_OE 0x80000
 #define PMUXEN 0x1
 #define DBGRUN 0x1
@@ -118,6 +135,8 @@
 #define EPD_CLK_PIN GROUP0OUT, CLKPIN
 #define EPD_MOSI_PIN GROUP0OUT, MOSIPIN
 #define EPD_LED_PIN GROUP1OUT, LEDPIN
+
+#define EPD_BUTTON1PIN GROUP0IN, BUTTON1PIN
 
 #define SET_PIN(_group,_pin,_value) ((_value == 0) ? (_group=_group&(~_pin)) : (_group=_group|_pin))
 #define DEV_Digital_Write(_pin, _value) SET_PIN(_pin,_value)

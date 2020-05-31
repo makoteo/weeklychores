@@ -180,9 +180,21 @@ void setClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYT
     day = day<<3;
     hour = hour<<3;
     minute = minute<<2;
+    while(RTC_STATUS != 0){
+        delay(1);
+    }
     RTC_CLOCK = 0;
-    unsigned int tmp = year<<24|month<<18|day<<14|hour<<9|minute<<4|second;
+    while(RTC_STATUS != 0){
+        delay(1);
+    }
+    UDOUBLE tmp = year<<24|month<<18|day<<14|hour<<9|minute<<4|second;
+    while(RTC_STATUS != 0){
+        delay(1);
+    }
     RTC_CLOCK = tmp;
+    while(RTC_STATUS != 0){
+        delay(1);
+    }
 }
 
 void increaseMinute(){
@@ -204,7 +216,13 @@ void increaseMinute(){
 
 void readClock(char *TimeAndDate){
     
-    unsigned int datetime = RTC_CLOCK;
+    while(RTC_STATUS != 0){
+        delay(1);
+    }
+    UDOUBLE datetime = RTC_CLOCK;
+    while(RTC_STATUS != 0){
+        delay(1);
+    }
     
     unsigned int year = (datetime >> 26) & 0x000000FF;
     unsigned int month = (datetime >> 22) & 0x0000000F;
@@ -228,16 +246,13 @@ void readClock(char *TimeAndDate){
     TimeAndDate[11] = ':';
     TimeAndDate[12] = 0x30 + minute/10;
     TimeAndDate[13] = 0x30 + minute%10;
+    TimeAndDate[14] = 0; //End of string
     //TimeAndDate[11] = 0x30 + second/10;
     //TimeAndDate[12] = 0x30 + second%10;
 }
 
 void main(){
-    char TimeAndDate[14];
-    readClock(TimeAndDate);
-    setClock(20,5,30,17,55,0);
-    readClock(TimeAndDate);
-    
+
     //ADD DCF77
     
     GROUP1DIR = GROUP1DIR|LEDPIN; //SET LED PIN AS OUTPUT
@@ -305,9 +320,14 @@ void main(){
     
     //Configure RTC
     CLKCTRL = 0x4404; //Datasheet page 123, Connect GENCLK4 to RTC
-    //DBGCTRL = DBGCTRL|DBGRUN; //Keep running even when debug is stopped
+    DBGCTRL = DBGCTRL|DBGRUN; //Keep running even when debug is stopped
     RTC_CTRL = 0x070A; // Datasheet page 242, divide clock by 128 to get 1Hz, set the MODE 2 (calendar) and enable RTC
     //read CLOCK register to get date & time // Datasheet page 262
+    
+    UBYTE TimeAndDate[15];
+    readClock(TimeAndDate);
+    setClock(20,5,30,14,5,0);
+    readClock(TimeAndDate);
     
     //Configure SPI SERCOM0
     GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_LOW; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]

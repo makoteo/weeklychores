@@ -102,6 +102,7 @@
 #define GENDIV *(unsigned short *)(0x40000C08)
 #define DBGCTRL *(unsigned char *)(0x4000140B)
 #define RTC_CLOCK *(unsigned int *)(0x40001410)
+#define RTC_STATUS *(unsigned char *)(0x40001801)
 
 #define SPI_CTRLA *(unsigned int *)(0x42000C00)
 #define SPI_CTRLB *(unsigned int *)(0x42000C04)

@@ -58,6 +58,11 @@
 #include <xc.h>
 #include <string.h>
 
+//#include <sys/attribs.h>
+//void __attribute__((interrupt, vector(0))) _CoreTimerHandler(void)
+//{
+    //DEV_Digital_Write(EPD_LED_PIN, 1);
+//}
 /*
 #define GROUP0PINCFG16 *(char *)(0x41004450)
 #define GROUP0DIR *(unsigned int *)(0x41004400)
@@ -174,31 +179,55 @@
     Refer to the example_file.h interface header for function usage details.
  */
 
+static char* Meniny[12][32] = {
+    {"tmp"},
+    {"", "Novy rok", "Alexandra, Karina", "Daniela", "Drahoslav", "Andrea", "Antonia", "Bohuslava", "Severin", "Alexej", "Dasa", "Malvina", "Ernest", "Rastislav", "Radovan", "Dobroslav", "Kristina", "Natasa", "Bohdana", "Drahomira, Mario", "Dalibor", "Vincent", "Zora", "Milos", "Timotej", "Gejza", "Tamara", "Bohus", "Alfonz", "Gaspar", "Ema", "Emil"}, 
+    {"", "Tatiana", "Erika, Erik", "Blazej", "Veronika", "Agata", "Dorota", "Vanda", "Zoja", "Zdenko1", "Gabriela", "Dezider", "Perla", "Arpad", "Valentin", "Pravoslav", "Ida,Liana", "Miloslava", "Jaromir", "Vlasta", "Livia", "Eleonora", "Etela", "Roman,Romana", "Matej", "Frederik,Frederika", "Viktor", "Alexander", "Zlatica", "Radomir"},
+    {"", "Albin", "Anezka", "Bohumil,Bohumila", "Kazimir", "Fridrich", "Radoslav,Radoslava", "Tomas", "Alan,Alana", "Frantiska1", "Bruno,Branislav", "Angela,Angelika", "Gregor", "Vlastimil", "Matilda", "Svetlana", "Boleslav", "Lubica", "Eduard", "Jozef", "Vitazoslav,Klaudius", "Blahoslav", "Benadik", "Adrian", "Gabriel", "Marian", "Emanuel", "Alena", "Sona", "Miroslav", "Vieroslava", "Benjamin"},
+    {"", "Hugo", "Zita", "Richard", "Izidor", "Miroslava", "Irena", "Zoltan", "Albert", "Milena1", "Igor", "Julius", "Estera", "Ales", "Justina", "Fedor", "Dana,Danica", "Rudolf,Rudolfa", "Valer", "Jela", "Marcel", "Ervin", "Slavomir", "Vojtech", "Juraj", "Marek", "Jaroslava", "Jaroslav", "Jarmila", "Lea", "Anastazia"},
+    {"", "Sviatok Prace", "Zigmund", "Galina,Timea", "Florian", "Lesia,Lesana", "Hermina", "Monika", "Ingrida", "Roland1", "Viktoria", "Blazena", "Pankrac", "Servac", "Bonifac", "Zofia,Sofia", "Svetozar", "Gizela,Aneta", "Viola", "Gertruda", "Bernard", "Zina", "Julia,Juliana", "Zelmira", "Ela", "Urban,Vivien", "Dusan", "Iveta", "Viliam", "Vilma", "Ferdinand", "Petrana,Petronela"},
+    {"", "Zaneta", "Xenia, Oxana", "Karolina", "Lenka", "Laura", "Norbert", "Robert,Roberta", "Medard", "Stanislava1", "Margareta,Greta", "Dobroslava", "Zlatko", "Anton", "Vasil", "Vit", "Blanka,Bianka", "Adolf", "Vratislav", "Alfred", "Valeria", "Alojz", "Paulina", "Sidonia", "Jan", "Olivia,Tadeas", "Adriana", "Ladislav,Ladislava", "Beata", "Peter,Pavol,Petra", "Melania"},
+    {"", "Diana", "Berta", "Miloslav", "Prokop", "Cyril,Metod", "Patrik,Patricia", "Oliver", "Ivan", "Lujza1", "Amalia", "Milota", "Nina", "Margita", "Kamil", "Henrich", "Drahomir,Rut", "Bohuslav", "Kamila", "Dusana", "Ilja,Elias", "Daniel", "Magdalena", "Olga", "Vladimir", "Jakub,Timur", "Anna,Hana,Anita", "Bozena", "Kristof", "Marta", "Libusa", "Ignac"}, 
+    {"", "Bozidara", "Gustav", "Jergus", "Dominika,Dominik", "Hortenzia", "Jozefina", "Stefania", "Oskar", "Lubomira1", "Vavrinec", "Zuzana", "Darina", "Lubomir", "Mojmir", "Marcela", "Leonard", "Milica", "Elena,Helena", "Lydia", "Anabela,Liliana", "Jana", "Tichomir", "Filip", "Bartolomej", "Ludovit", "Samuel", "Silvia", "Augustin", "Nikola,Nikolaj", "Ruzena", "Nora"},
+    {"", "Drahoslava", "Linda,Rebeka", "Belo", "Rozalia", "Regina", "Alica", "Marianna", "Miriama", "Martina1", "Oleg", "Bystrik", "Maria,Marlena", "Ctibor", "Ludomil", "Jolana", "Ludmila", "Olympia", "Eugenia", "Konstantin", "Luboslav,Luboslava", "Matus", "Moric", "Zdenka", "Lubos,Lubor", "Vladislav,Vladislava", "Edita", "Cyprian", "Vaclav", "Michal,Michaela", "Jarolim"},
+    {"", "Arnold", "Levoslav", "Stela", "Frantisek", "Viera", "Natalia", "Eliska", "Brigita", "Dionyz1", "Slavomira", "Valentina", "Maximilian", "Koloman", "Boris", "Terezia", "Vladimira", "Hedviga", "Lukas", "Kristian", "Vendelin", "Ursula", "Sergej", "Alojzia", "Kvetoslava", "Aurel", "Demeter", "Sabina", "Dobromila", "Klara", "Simon,Simona", "Aurelia"},
+    {"", "Denis,Denisa", "Hubert", "Karol", "Imrich", "Renata", "Rene", "Bohumir", "Teodor1", "Tibor", "Martin,Maros1", "Svatopluk", "Stanislav", "Irma", "Leopold", "Agnesa", "Klaudia", "Eugen", "Alzbeta", "Felix", "Elvira", "Cecilia", "Klement", "Emilia", "Katarina", "Kornel", "Milan", "Henrieta", "Vratko", "Ondrej,Andrej"},
+    {"", "Edmund", "Bibiana", "Oldrich", "Barbora,Barbara", "Oto", "Mikulas", "Ambroz", "Marina", "Izabela1", "Raduz", "Hilda", "Otilia", "Lucia", "Branislava,Bronislava", "Ivica", "Albina", "Kornelia", "Slava", "Judita", "Dagmara", "Bohdan", "Adela", "Nadezda", "Adam,Eva", "Stefan", "Filomena", "Ivana,Ivona", "Milada", "David", "Silvester"}
+};
+
+static char* Days[] = {"", "Pondelok", "Utorok", "Streda", "Stvrtok", "Piatok", "Sobota", "Nedela"};
+static unsigned int today = 1;
+
+static char* Apartments[] = {"", "33", "34", "35", "36"};
+static unsigned int apartmentIndex = 1;
+
+int string_length(char s[]) {
+   int c = 0;
+   while (s[c] != '\0')
+      c++;
+
+   return c;
+}
+
 void setClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYTE second){
     year = year<<2;
     month = month<<4;
     day = day<<3;
     hour = hour<<3;
     minute = minute<<2;
-    while(RTC_STATUS != 0){
-        delay(1);
-    }
+    while(RTC_STATUS != 0){}
     RTC_CLOCK = 0;
-    while(RTC_STATUS != 0){
-        delay(1);
-    }
+    while(RTC_STATUS != 0){}
     UDOUBLE tmp = year<<24|month<<18|day<<14|hour<<9|minute<<4|second;
-    while(RTC_STATUS != 0){
-        delay(1);
-    }
+    while(RTC_STATUS != 0){}
     RTC_CLOCK = tmp;
-    while(RTC_STATUS != 0){
-        delay(1);
-    }
+    while(RTC_STATUS != 0){}
 }
 
 void increaseMinute(){
+    while(RTC_STATUS != 0){}
     unsigned int datetime = RTC_CLOCK;
+    while(RTC_STATUS != 0){}
     
     unsigned int year = (datetime >> 26) & 0x000000FF;
     unsigned int month = (datetime >> 22) & 0x0000000F;
@@ -216,13 +245,9 @@ void increaseMinute(){
 
 void readClock(char *TimeAndDate){
     
-    while(RTC_STATUS != 0){
-        delay(1);
-    }
+    while(RTC_STATUS != 0){}
     UDOUBLE datetime = RTC_CLOCK;
-    while(RTC_STATUS != 0){
-        delay(1);
-    }
+    while(RTC_STATUS != 0){}
     
     unsigned int year = (datetime >> 26) & 0x000000FF;
     unsigned int month = (datetime >> 22) & 0x0000000F;
@@ -251,12 +276,41 @@ void readClock(char *TimeAndDate){
     //TimeAndDate[12] = 0x30 + second%10;
 }
 
-void main(){
+int getMonth(){
+    while(RTC_STATUS != 0){}
+    UDOUBLE datetime = RTC_CLOCK;
+    while(RTC_STATUS != 0){}
 
+    unsigned int month = (datetime >> 22) & 0x0000000F;
+    
+    return month;
+}
+
+int getDay(){
+    while(RTC_STATUS != 0){}
+    UDOUBLE datetime = RTC_CLOCK;
+    while(RTC_STATUS != 0){}
+
+    unsigned int day = (datetime >> 17) & 0x0000001F;
+    
+    return day;
+}
+
+int getMinute(){
+    while(RTC_STATUS != 0){}
+    UDOUBLE datetime = RTC_CLOCK;
+    while(RTC_STATUS != 0){}
+
+    unsigned int minute = (datetime >> 6) & 0x0000003F;
+    
+    return minute;
+}
+
+void main(){
     //ADD DCF77
     
     GROUP1DIR = GROUP1DIR|LEDPIN; //SET LED PIN AS OUTPUT
-    GROUP1OUT = GROUP1OUT|LEDPIN; //SET LED HIGH
+    //GROUP1OUT = GROUP1OUT|LEDPIN; //SET LED HIGH
     //GROUP1OUT = GROUP1OUT^LEDPIN;
     
     GROUP0OUT = GROUP0OUT|CSPIN;
@@ -311,22 +365,22 @@ void main(){
     //Connect GENCLK4 to XOSC32K and send it also to PA10 (mkr zero J4.11)
     GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H_LOW; //datasheet page 385, Set alternate function of PA10 as GCLK_IO[4]
     GROUP0PINCFG10 = GROUP0PINCFG10|PMUXEN; //datasheet page 387, Enable alternate function    
-    GENDIV = 0x0000FF04;//divide 32.768khz by 255 = 128
+    GENDIV = 0x00002004;//divide 32.768khz by 32 = 1024
     GENCTRL = 0x00290504; //datasheet page 31 & 126 Connect GENCLK04 to XOSC32K, Send it to GCLK_IO[4] and enable it
     
     
     //-----------------------------------------------------------------------------------------------------------------------------------------------
-    FREQCORR = 0x1C;
+    //FREQCORR = 0x1C;
     
     //Configure RTC
     CLKCTRL = 0x4404; //Datasheet page 123, Connect GENCLK4 to RTC
     DBGCTRL = DBGCTRL|DBGRUN; //Keep running even when debug is stopped
-    RTC_CTRL = 0x070A; // Datasheet page 242, divide clock by 128 to get 1Hz, set the MODE 2 (calendar) and enable RTC
+    RTC_CTRL = 0x0A0A; // Datasheet page 242, divide clock by 1024 to get 1Hz, set the MODE 2 (calendar) and enable RTC
     //read CLOCK register to get date & time // Datasheet page 262
     
     UBYTE TimeAndDate[15];
     readClock(TimeAndDate);
-    setClock(20,5,30,14,5,0);
+    setClock(20,10,19,8,34,0);
     readClock(TimeAndDate);
     
     //Configure SPI SERCOM0
@@ -363,11 +417,22 @@ void main(){
     Paint_SelectImage(BlackImage);
     Paint_Clear(WHITE);
     //Paint_DrawRectangle(20, 70, 70, 120, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    char tmp[] = "Hi!";
+    char tmp[] = "Init...";
     
     Paint_DrawString_EN(10, 20, tmp, &Font24, WHITE, BLACK);
     EPD_2IN7_Display(BlackImage);
     EPD_2IN7_Sleep();
+    
+    //Set RTC interrupt 
+    RTC_MASK = 0x01; //Compare only seconds
+    RTC_ALARM = 0x0; //When seconds are 0 (at start of every minute)
+    RTC_INTENSET = 0x01; //Enables interrupt coming from RTC peripheral
+
+    NVIC_ISER = 0x8; //Enable RTC interrupt in NVIC page 49 table 11-3, numbers are bit in register (RTC NVIC line 3 = 4th bit)
+    
+    SCR = SCR|SLEEPDEEP; //Not sure, but probably sets sleep mode to standby (deep sleep); https://developer.arm.com/documentation/dui0497/a/cortex-m0-peripherals/system-control-block/system-control-register
+    
+    __WFI(); //Go into deep sleep, wait for interrupt
     
     //delay(10);
     //clock();
@@ -378,16 +443,46 @@ void main(){
         EPD_2IN7_Wake();
         Paint_Clear(WHITE);
         readClock(TimeAndDate);
-        Paint_DrawString_EN(10, 20, TimeAndDate, &Font24, WHITE, BLACK);
-        Paint_DrawString_EN(10, 35, " ", &FontTmp, WHITE, BLACK);
+        //if(getMinute() == 14){
+            if(today < 7){
+                today++;
+            }else{
+                today = 1;
+            }
+        //}
+        
+        if(apartmentIndex < 4){
+            apartmentIndex++;
+        }else{
+            apartmentIndex = 1;
+        }
+        
+        unsigned int xPos = 0;
+        xPos = 132-(string_length(Apartments[apartmentIndex])*0.5)*72;
+        Paint_DrawString_EN(xPos, 0, Apartments[apartmentIndex], &FontTmp, WHITE, BLACK);
+                
+        char dayAndDate[80] = {};
+        strcpy(dayAndDate, Days[today]);
+        strcat(dayAndDate, " ");
+        strcat(dayAndDate, TimeAndDate);
+        
+        xPos = 132-(string_length(dayAndDate)*0.5)*11;
+        Paint_DrawString_EN(xPos, 146, dayAndDate, &Font16, WHITE, BLACK);
+        
+        unsigned int monthc = getMonth();
+        unsigned int dayc = getDay();
+        xPos = 132-(string_length(Meniny[monthc][dayc])*0.5)*11;
+        Paint_DrawString_EN(xPos, 160, Meniny[monthc][dayc], &Font16, WHITE, BLACK);
         EPD_2IN7_Display(BlackImage);
         EPD_2IN7_Sleep();
+       __WFI();
         
         UBYTE button1pressed;
-        for(i = 0; i < 50; i++){
+        /*for(i = 0; i < 50; i++){
             delay(500);
             DEV_Digital_Write(EPD_LED_PIN, 1);
             delay(500);
+         */
             /*button1pressed = DEV_Digital_Read(EPD_BUTTON1PIN);
             button1pressed =!(button1pressed & 0x01);
             if(button1pressed == 1){
@@ -400,11 +495,23 @@ void main(){
                 EPD_2IN7_Display(BlackImage);
                 EPD_2IN7_Sleep();
             }*/
-            DEV_Digital_Write(EPD_LED_PIN, 0);
-        }
+           
+        /*  DEV_Digital_Write(EPD_LED_PIN, 0);  
+           
+            if(RTC_INTFLAG&0x01){
+                delay(10);
+                RTC_INTFLAG = RTC_INTFLAG|0x01;
+            }
+        }*/
     
     }
     DEV_Module_Exit();
+}
+
+void RTC_Handler(void){
+    delay(10);
+    RTC_INTFLAG = RTC_INTFLAG|0x01;
+    NVIC_ICPR = 0x08;
 }
 
 /* *****************************************************************************

@@ -99,10 +99,19 @@
 #define GROUP1PINCFG22 *(unsigned char *)(0x410044D6)
 #define XOSC32K *(unsigned short *)(0x40000814)
 #define RTC_CTRL *(unsigned short *)(0x40001400)
-#define GENDIV *(unsigned short *)(0x40000C08)
+#define GENDIV *(unsigned int *)(0x40000C08)
 #define DBGCTRL *(unsigned char *)(0x4000140B)
 #define RTC_CLOCK *(unsigned int *)(0x40001410)
 #define RTC_STATUS *(unsigned char *)(0x40001801)
+
+#define RTC_EVCTRL *(unsigned short *)(0x40001404)
+#define RTC_INTFLAG *(unsigned char *)(0x40001408)
+#define RTC_ALARM *(unsigned int *)(0x40001418)
+#define RTC_MASK *(unsigned char *)(0x4000141C)
+#define RTC_INTENSET *(unsigned char *)(0x40001407)
+#define NVIC_ISER *(unsigned int *)(0xE000E100)
+#define NVIC_ICER *(unsigned int *)(0xE000E180)
+#define NVIC_ICPR *(unsigned int *)(0xE000E280)
 
 #define SPI_CTRLA *(unsigned int *)(0x42000C00)
 #define SPI_CTRLB *(unsigned int *)(0x42000C04)
@@ -116,7 +125,19 @@
 #define GROUP0PINCFG17 *(unsigned char *)(0x41004451)
 #define APBCMASK *(unsigned int *)(0x40000420)
 
+#define GROUP0PMUX4 *(unsigned char *)(0x41004434)
+#define GROUP0PINCFG8 *(unsigned char *)(0x41004448)
+#define GROUP0PINCFG9 *(unsigned char *)(0x41004449)
+
+#define I2C_CTRLA *(unsigned int *)(0x42000800)
+#define I2C_CTRLB *(unsigned int *)(0x42000804)
+#define I2C_BAUD *(unsigned short *)(0x4200080C)
+#define I2C_ADDR *(unsigned int *)(0x42000824)
+#define I2C_DATA *(unsigned short *)(0x42000828)
+
 #define FREQCORR *(unsigned char *)(0x4000140B)
+
+#define SCR *(unsigned int *)(0xE000ED10)
 
 #define FUNCTION_H_LOW 0x07
 #define FUNCTION_H_HIGH 0x70
@@ -128,6 +149,8 @@
 
 #define PULLEN 0x4
 #define INEN 0x2
+
+#define SLEEPDEEP 0x4
 
 #define EPD_RST_PIN GROUP1OUT,RSTPIN
 #define EPD_DC_PIN GROUP0OUT, DCPIN

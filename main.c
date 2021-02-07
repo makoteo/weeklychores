@@ -380,18 +380,18 @@ void main(){
     
     UBYTE TimeAndDate[15];
     readClock(TimeAndDate);
-    setClock(20,10,19,8,34,0);
+    setClock(21,2,2,19,58,0);
     readClock(TimeAndDate);
     
-    //Configure SPI SERCOM0
-    GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_LOW; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
+    //Configure SPI SERCOM1
+    GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_LOW; //datasheet page 385, Set alternate function of PA16 as PAD[0]
     GROUP0PINCFG16 = GROUP0PINCFG16|PMUXEN; //datasheet page 387, Enable alternate function
     
-    GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_HIGH; //datasheet page 385, Set alternate function of PB22 as GCLK_IO[0]
+    GROUP0PMUX8 = GROUP0PMUX8|FUNCTION_C_HIGH; //datasheet page 385, Set alternate function of PA17 as PAD[1]
     GROUP0PINCFG17 = GROUP0PINCFG17|PMUXEN; //datasheet page 387, Enable alternate function
     
     //DFLLCTRL = 0x02; //Enable 48MHz Clock
-    GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H_HIGH; //datasheet page 385, Set alternate function of PA11 as GCLK_IO[5]
+    GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H_HIGH; //datasheet page 385, Set alternate function of PA11 as PAD[3]
     GROUP0PINCFG11 = GROUP0PINCFG11|PMUXEN; //datasheet page 387, Enable alternate function   
     GENCTRL = 0x00090605; //datasheet page 31 & 126 Connect GENCLK05 to DFLL48M, Send it to GCLK_IO[5] and enable it
     CLKCTRL = 0x4515; //Datasheet page 123, Connect GENCLK5 to SERCOM1
@@ -399,6 +399,38 @@ void main(){
     APBCMASK = APBCMASK|0x00000008; //Enables APBC clock for SERCOM1
     SPI_CTRLB = 0x0; //8 bit transfer page 465
     SPI_CTRLA = 0x0000000E; //Enable SPI master
+    
+        
+    //Configure I2C
+    APBCMASK = APBCMASK|0x00000004; //Enables APBC clock for SERCOM0
+    
+    GROUP0PMUX4 = GROUP0PMUX4|FUNCTION_C_LOW; //datasheet page 476, Set alternate function of PA8 as PAD[0] - SDA
+    GROUP0PINCFG8 = GROUP0PINCFG8|PMUXEN;
+    
+    GROUP0PMUX4 = GROUP0PMUX4|FUNCTION_C_HIGH; //datasheet page 476, Set alternate function of PA9 as PAD[1] - SCL
+    GROUP0PINCFG9 = GROUP0PINCFG9|PMUXEN;
+    
+    CLKCTRL = 0x4514; //Datasheet page 123, Connect GENCLK5 to SERCOM0
+    CLKCTRL = 0x4513; //Datasheet page 123, Connect GENCLK5 to SERCOM_SLOW (should be connected to 32kHz, currently is not... Maybe isn't even necessary)
+    
+    I2C_CTRLA = 0x30000014; //Datasheet page 510, INACTOUT switches I2C to idle automatically, MODE 5 means master 
+    I2C_BAUD = 0xFFFF; //Datasheet page 515, just sets it to something for now
+    I2C_CTRLA = I2C_CTRLA|0x00000002; //Datasheet page 510, enables I2C
+    
+    //Write I2C
+    I2C_ADDR = 0x000220DE; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
+    I2C_DATA = 0x0022; //Datasheet page 524, where to write to
+    I2C_DATA = 0x00AA;//What data to write
+    
+    //Read I2C
+    I2C_ADDR = 0x000120DE; //Datasheet page 522, send 1 byte to 0xF6 (address shifted left by one, last bit is read/write)
+    I2C_DATA = 0x0021; //Sets where to read from
+    I2C_ADDR = 0x000120DF;//Datasheet page 522, read 1 byte from 0xF6 (address shifted left by one, last bit is read/write)
+    
+    short tmpdata = I2C_DATA;
+    
+    I2C_CTRLB = I2C_CTRLB|0x00070000; //atasheet page 513, reset flags
+    //I2C_DATA = 0x0020;
     
     DEV_Module_Init();
     EPD_2IN7_Init_4Gray();
@@ -421,7 +453,7 @@ void main(){
     
     Paint_DrawString_EN(10, 20, tmp, &Font24, WHITE, BLACK);
     EPD_2IN7_Display(BlackImage);
-    EPD_2IN7_Sleep();
+    //EPD_2IN7_Sleep();
     
     //Set RTC interrupt 
     RTC_MASK = 0x01; //Compare only seconds

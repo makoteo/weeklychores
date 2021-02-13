@@ -134,6 +134,8 @@
 #define I2C_BAUD *(unsigned short *)(0x4200080C)
 #define I2C_ADDR *(unsigned int *)(0x42000824)
 #define I2C_DATA *(unsigned short *)(0x42000828)
+#define I2C_INTFLAG *(unsigned char *)(0x42000818)
+#define I2C_STATUS *(unsigned short *)(0x4200081A)
 
 #define FREQCORR *(unsigned char *)(0x4000140B)
 

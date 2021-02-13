@@ -276,6 +276,71 @@ void readClock(char *TimeAndDate){
     //TimeAndDate[12] = 0x30 + second%10;
 }
 
+void waitForI2CSent(){
+    while(!I2C_INTFLAG&0x1){
+        //wait
+    }
+    I2C_INTFLAG = I2C_INTFLAG|0x1;
+}
+void waitForI2CRead(){
+    while(!I2C_INTFLAG&0x2){
+        //wait
+    }
+    I2C_INTFLAG = I2C_INTFLAG|0x2;
+}
+
+void waitForI2CIdle(){
+    while(!I2C_STATUS&0x3 == 0x10){
+        
+    }
+}
+
+void writeI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
+    char tmpDeviceAddr = deviceAddr<<1;
+    int tmpAddr = 0x00000000;
+    tmpAddr = tmpAddr|(length+1);
+    tmpAddr = tmpAddr<<16;
+    tmpAddr = tmpAddr|0x2000;
+    tmpAddr = tmpAddr|tmpDeviceAddr;
+    I2C_ADDR = tmpAddr; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
+    waitForI2CSent();
+    I2C_DATA = registerAddr; //Datasheet page 524, where to write to
+    
+    for(int i = 0; i < length; i++){
+        waitForI2CSent();
+        I2C_DATA = data[i];//What data to write
+    }
+    waitForI2CIdle();
+}
+
+void readI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
+    char tmpDeviceAddr = deviceAddr<<1;
+    int tmpAddr = 0x00000000;
+    tmpAddr = tmpAddr|0x1;
+    tmpAddr = tmpAddr<<16;
+    tmpAddr = tmpAddr|0x2000;
+    tmpAddr = tmpAddr|tmpDeviceAddr;
+    I2C_ADDR = tmpAddr; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
+    waitForI2CSent();
+    I2C_DATA = registerAddr; //Datasheet page 524, where to write to
+    waitForI2CIdle();
+    tmpAddr = 0x00000000;
+    tmpAddr = tmpAddr|(length);
+    tmpAddr = tmpAddr<<16;
+    tmpAddr = tmpAddr|0x2000;
+    tmpAddr = tmpAddr|tmpDeviceAddr;
+    tmpAddr = tmpAddr|0x1;
+    I2C_ADDR = tmpAddr;
+    
+    for(int i = 0; i < length; i++){
+        waitForI2CRead();
+        data[i] = I2C_DATA;
+        I2C_CTRLB = I2C_CTRLB|0x00020000; //Datasheet page 513, reset flags
+    }
+    
+    //I2C_CTRLB = I2C_CTRLB|0x00070000; //Datasheet page 513, reset flags
+}
+
 int getMonth(){
     while(RTC_STATUS != 0){}
     UDOUBLE datetime = RTC_CLOCK;
@@ -416,20 +481,26 @@ void main(){
     I2C_CTRLA = 0x30000014; //Datasheet page 510, INACTOUT switches I2C to idle automatically, MODE 5 means master 
     I2C_BAUD = 0xFFFF; //Datasheet page 515, just sets it to something for now
     I2C_CTRLA = I2C_CTRLA|0x00000002; //Datasheet page 510, enables I2C
-    
+    //I2C_CTRLB = I2C_CTRLB|0x100;
     //Write I2C
-    I2C_ADDR = 0x000220DE; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
-    I2C_DATA = 0x0022; //Datasheet page 524, where to write to
-    I2C_DATA = 0x00AA;//What data to write
+    //I2C_ADDR = 0x000220DE; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
+    //I2C_DATA = 0x0022; //Datasheet page 524, where to write to
+    //I2C_DATA = 0x00AA;//What data to write
+    
+    UBYTE data[] = {0x00aa, 0x00bb, 0x00cc, 0x00dd};
+    writeI2C(0x6F, 0x20, data, 4);
+    
+    UBYTE dataRead[4];
+    readI2C(0x6F, 0x20, dataRead, 4);
     
     //Read I2C
-    I2C_ADDR = 0x000120DE; //Datasheet page 522, send 1 byte to 0xF6 (address shifted left by one, last bit is read/write)
-    I2C_DATA = 0x0021; //Sets where to read from
-    I2C_ADDR = 0x000120DF;//Datasheet page 522, read 1 byte from 0xF6 (address shifted left by one, last bit is read/write)
+    //I2C_ADDR = 0x000120DE; //Datasheet page 522, send 1 byte to 0xF6 (address shifted left by one, last bit is read/write)
+    //I2C_DATA = 0x0021; //Sets where to read from
+    //I2C_ADDR = 0x000120DF;//Datasheet page 522, read 1 byte from 0xF6 (address shifted left by one, last bit is read/write)
     
-    short tmpdata = I2C_DATA;
+    //short tmpdata = I2C_DATA;
     
-    I2C_CTRLB = I2C_CTRLB|0x00070000; //atasheet page 513, reset flags
+    //I2C_CTRLB = I2C_CTRLB|0x00070000; //Datasheet page 513, reset flags
     //I2C_DATA = 0x0020;
     
     DEV_Module_Init();

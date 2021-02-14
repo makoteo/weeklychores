@@ -277,13 +277,13 @@ void readClock(char *TimeAndDate){
 }
 
 void waitForI2CSent(){
-    while(!I2C_INTFLAG&0x1){
+    while(!(I2C_INTFLAG&0x1)){
         //wait
     }
     I2C_INTFLAG = I2C_INTFLAG|0x1;
 }
 void waitForI2CRead(){
-    while(!I2C_INTFLAG&0x2){
+    while(!(I2C_INTFLAG&0x2)){
         //wait
     }
     I2C_INTFLAG = I2C_INTFLAG|0x2;
@@ -303,7 +303,7 @@ void writeI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
     tmpAddr = tmpAddr|0x2000;
     tmpAddr = tmpAddr|tmpDeviceAddr;
     I2C_ADDR = tmpAddr; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
-    waitForI2CSent();
+    //waitForI2CSent();
     I2C_DATA = registerAddr; //Datasheet page 524, where to write to
     
     for(int i = 0; i < length; i++){
@@ -325,7 +325,7 @@ void readI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
     I2C_DATA = registerAddr; //Datasheet page 524, where to write to
     waitForI2CIdle();
     tmpAddr = 0x00000000;
-    tmpAddr = tmpAddr|(length);
+    tmpAddr = tmpAddr|(length+1);
     tmpAddr = tmpAddr<<16;
     tmpAddr = tmpAddr|0x2000;
     tmpAddr = tmpAddr|tmpDeviceAddr;
@@ -335,10 +335,23 @@ void readI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
     for(int i = 0; i < length; i++){
         waitForI2CRead();
         data[i] = I2C_DATA;
-        I2C_CTRLB = I2C_CTRLB|0x00020000; //Datasheet page 513, reset flags
+        if(i < (length-1)){
+            I2C_CTRLB = 0x00020000; //Datasheet page 513, reset flags   
+        }else{
+            I2C_CTRLB = 0x00070000; //Datasheet page 513, reset flags
+        }
     }
-    
-    //I2C_CTRLB = I2C_CTRLB|0x00070000; //Datasheet page 513, reset flags
+   
+}
+
+void setI2CClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYTE second){
+    UBYTE data1[1];
+    int secondTens = second/10;
+    secondTens = secondTens<<4;
+    int secondOnes = second%10;
+    data1[0] = 0x80|secondTens;
+    data1[0] = data1[0]|secondOnes;
+    writeI2C(0x6F, 0x0, data1, 1);
 }
 
 int getMonth(){
@@ -479,19 +492,23 @@ void main(){
     CLKCTRL = 0x4513; //Datasheet page 123, Connect GENCLK5 to SERCOM_SLOW (should be connected to 32kHz, currently is not... Maybe isn't even necessary)
     
     I2C_CTRLA = 0x30000014; //Datasheet page 510, INACTOUT switches I2C to idle automatically, MODE 5 means master 
+    //I2C_CTRLA = I2C_CTRLA|0x08000000;
+    //I2C_CTRLB = I2C_CTRLB|0x100;
     I2C_BAUD = 0xFFFF; //Datasheet page 515, just sets it to something for now
     I2C_CTRLA = I2C_CTRLA|0x00000002; //Datasheet page 510, enables I2C
-    //I2C_CTRLB = I2C_CTRLB|0x100;
+
     //Write I2C
     //I2C_ADDR = 0x000220DE; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
     //I2C_DATA = 0x0022; //Datasheet page 524, where to write to
     //I2C_DATA = 0x00AA;//What data to write
     
-    UBYTE data[] = {0x00aa, 0x00bb, 0x00cc, 0x00dd};
-    writeI2C(0x6F, 0x20, data, 4);
+    //UBYTE data[] = {0x00aa, 0x00bb, 0x00cc, 0x00dd};
+    //writeI2C(0x6F, 0x20, data, 4);
+    
+    setI2CClock(0, 0, 0, 0, 0, 25);
     
     UBYTE dataRead[4];
-    readI2C(0x6F, 0x20, dataRead, 4);
+    readI2C(0x6F, 0x0, dataRead, 4);
     
     //Read I2C
     //I2C_ADDR = 0x000120DE; //Datasheet page 522, send 1 byte to 0xF6 (address shifted left by one, last bit is read/write)

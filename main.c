@@ -277,20 +277,23 @@ void readClock(char *TimeAndDate){
 }
 
 void waitForI2CSent(){
-    while(!(I2C_INTFLAG&0x1)){
-        //wait
+    while((I2C_INTFLAG & 0x1) == 0){
+    //while(!(((I2C_INTFLAG&0x1)) && (!(I2C_STATUS&0x4)) && (I2C_SYNCBUSY == 0))){
     }
     I2C_INTFLAG = I2C_INTFLAG|0x1;
 }
 void waitForI2CRead(){
-    while(!(I2C_INTFLAG&0x2)){
-        //wait
+    while((I2C_INTFLAG & 0x2) == 0){
+    //while(!(((I2C_INTFLAG&0x1)) && (!(I2C_STATUS&0x4)) && (I2C_SYNCBUSY == 0))){
     }
     I2C_INTFLAG = I2C_INTFLAG|0x2;
 }
 
 void waitForI2CIdle(){
-    while(!I2C_STATUS&0x3 == 0x10){
+    //while(!(((I2C_STATUS&0x3) == 0x10) && ((I2C_SYNCBUSY == 0)))){
+        
+    //}
+    while((I2C_STATUS & 0x30) == 0x10){
         
     }
 }
@@ -302,15 +305,19 @@ void writeI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
     tmpAddr = tmpAddr<<16;
     tmpAddr = tmpAddr|0x2000;
     tmpAddr = tmpAddr|tmpDeviceAddr;
+    
     I2C_ADDR = tmpAddr; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
-    //waitForI2CSent();
+    waitForI2CSent();
     I2C_DATA = registerAddr; //Datasheet page 524, where to write to
+    //waitForI2CSent();
     
     for(int i = 0; i < length; i++){
         waitForI2CSent();
         I2C_DATA = data[i];//What data to write
     }
-    waitForI2CIdle();
+    //waitForI2CSent();
+    I2C_CTRLB = 0x00030000; //Datasheet page 513, reset flags
+    //waitForI2CIdle();
 }
 
 void readI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
@@ -345,12 +352,21 @@ void readI2C(char deviceAddr, char registerAddr, UBYTE *data, char length){
 }
 
 void setI2CClock(UBYTE year, UBYTE month, UBYTE day, UBYTE hour, UBYTE minute, UBYTE second){
-    UBYTE data1[1];
+    UBYTE data1[2];
     int secondTens = second/10;
     secondTens = secondTens<<4;
     int secondOnes = second%10;
     data1[0] = 0x80|secondTens;
     data1[0] = data1[0]|secondOnes;
+    
+    data1[0] = 0x24;
+    
+    int minuteTens = minute/10;
+    minuteTens = minuteTens<<4;
+    int minuteOnes = minute%10;
+    data1[1] = 0x00|minuteTens;
+    data1[1] = data1[1]|minuteOnes;
+    
     writeI2C(0x6F, 0x0, data1, 1);
 }
 
@@ -472,7 +488,7 @@ void main(){
     GROUP0PMUX5 = GROUP0PMUX5|FUNCTION_H_HIGH; //datasheet page 385, Set alternate function of PA11 as PAD[3]
     GROUP0PINCFG11 = GROUP0PINCFG11|PMUXEN; //datasheet page 387, Enable alternate function   
     GENCTRL = 0x00090605; //datasheet page 31 & 126 Connect GENCLK05 to DFLL48M, Send it to GCLK_IO[5] and enable it
-    CLKCTRL = 0x4515; //Datasheet page 123, Connect GENCLK5 to SERCOM1
+    CLKCTRL = 0x4415; //Datasheet page 123, Connect GENCLK5 to SERCOM1
     
     APBCMASK = APBCMASK|0x00000008; //Enables APBC clock for SERCOM1
     SPI_CTRLB = 0x0; //8 bit transfer page 465
@@ -491,11 +507,15 @@ void main(){
     CLKCTRL = 0x4514; //Datasheet page 123, Connect GENCLK5 to SERCOM0
     CLKCTRL = 0x4513; //Datasheet page 123, Connect GENCLK5 to SERCOM_SLOW (should be connected to 32kHz, currently is not... Maybe isn't even necessary)
     
-    I2C_CTRLA = 0x30000014; //Datasheet page 510, INACTOUT switches I2C to idle automatically, MODE 5 means master 
+    I2C_CTRLA = 0x30300014; //Datasheet page 510, INACTOUT switches I2C to idle automatically, MODE 5 means master 
+    while (I2C_SYNCBUSY){}
     //I2C_CTRLA = I2C_CTRLA|0x08000000;
-    //I2C_CTRLB = I2C_CTRLB|0x100;
+    I2C_CTRLB = I2C_CTRLB|0x100;
+    while (I2C_SYNCBUSY){}
     I2C_BAUD = 0xFFFF; //Datasheet page 515, just sets it to something for now
+    while (I2C_SYNCBUSY){}
     I2C_CTRLA = I2C_CTRLA|0x00000002; //Datasheet page 510, enables I2C
+    while (I2C_SYNCBUSY){}
 
     //Write I2C
     //I2C_ADDR = 0x000220DE; //Datasheet page 522, send 2 bytes to 0xF6 (address shifted left by one, last bit is read/write)
@@ -505,7 +525,7 @@ void main(){
     //UBYTE data[] = {0x00aa, 0x00bb, 0x00cc, 0x00dd};
     //writeI2C(0x6F, 0x20, data, 4);
     
-    setI2CClock(0, 0, 0, 0, 0, 25);
+    setI2CClock(0, 0, 0, 0, 0, 0);
     
     UBYTE dataRead[4];
     readI2C(0x6F, 0x0, dataRead, 4);
